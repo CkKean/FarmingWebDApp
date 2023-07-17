@@ -76,15 +76,17 @@ const App = () => {
 
     if (web3) {
       const ethereumProvider = window.ethereum;
-      ethereumProvider.on("accountsChanged", handleAccountsChanged);
-      ethereumProvider.on("chainChanged", handleChainChanged);
-      return () => {
-        ethereumProvider.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-        ethereumProvider.removeListener("chainChanged", handleChainChanged);
-      };
+      if (ethereumProvider) {
+        ethereumProvider.on("accountsChanged", handleAccountsChanged);
+        ethereumProvider.on("chainChanged", handleChainChanged);
+        return () => {
+          ethereumProvider.removeListener(
+            "accountsChanged",
+            handleAccountsChanged
+          );
+          ethereumProvider.removeListener("chainChanged", handleChainChanged);
+        };
+      }
     }
   }, [web3]);
 
@@ -135,12 +137,16 @@ const App = () => {
   const handleAccountsChanged = (accounts: any) => {
     const newAccount = accounts[0] || "";
     setAccount(newAccount);
-    if (newAccount && newAccount !== "") fetchTokensAmount(newAccount);
+    if (newAccount && newAccount !== "") {
+      setDepositAmount(0)
+      setWithdrawAmount(0)
+      fetchTokensAmount(newAccount);
+    }
   };
 
   const connectWallet = async () => {
     try {
-      if (web3) {
+      if (web3 && window.ethereum) {
         const currentChainId = await window.ethereum.request({
           method: "eth_chainId",
         });
@@ -170,6 +176,8 @@ const App = () => {
           setAccount(account);
           fetchTokensAmount(account);
         }
+      } else {
+        messageApi.error("Web3 not found in your browser.");
       }
     } catch (error: any) {
       console.error(error);
@@ -315,6 +323,8 @@ const App = () => {
   const changeActionType = (type: number) => {
     setActionType(type);
     fetchTokensAmount();
+    setDepositAmount(0);
+    setWithdrawAmount(0);
   };
 
   const handleApproveLpToken = async () => {
@@ -347,7 +357,7 @@ const App = () => {
     if (numValue > LPTokenAmount) {
       message = "Insufficient LP Token balance.";
     } else if (numValue > allowance) {
-      message = "Insufficient allowance.";
+      message = "Insufficient allowance. Please approve the allowance.";
     } else if (numValue === 0) {
       message = "Deposit amount must larger than zero.";
     } else if (
@@ -377,6 +387,7 @@ const App = () => {
         messageApi.error("Deposit unsuccessfully. Please try again.");
       }
       fetchTokensAmount();
+      setDepositAmount(0);
     } catch (error) {
       console.error(error);
       messageApi.error(`Something went wrong: ${error}`);
@@ -441,6 +452,7 @@ const App = () => {
         messageApi.error(`Withdraw unsuccessfully. Please try again.`);
       }
       fetchTokensAmount();
+      setWithdrawAmount(0);
     } catch (error) {
       console.error(error);
       messageApi.error(`Something went wrong: ${error}`);
@@ -519,7 +531,7 @@ const App = () => {
 
   const header = useMemo(
     () => (
-      <Row>
+      <Row style={{ marginBottom: "0.5rem" }}>
         <Col md={6} sm={2} xs={2}></Col>
         <Col md={12} sm={20} xs={20}>
           <Row justify={"space-between"} align={"middle"}>
@@ -601,36 +613,17 @@ const App = () => {
             min={0}
             disabled={!validAllowance || !validChain}
             placeholder="Enter Deposit Amount"
-            onChange={(e) => setDepositAmount(Number(e.target.value))}
+            onChange={(e) => {
+              setDepositAmount(Number(e.target.value));
+            }}
             value={depositAmount}
           />
         </Form.Item>
 
-        {LPTokenAmount > 0 ? (
-          validAllowance ? (
-            <Button
-              block
-              type="primary"
-              onClick={handleDeposit}
-              disabled={!validChain}
-            >
-              Deposit
-            </Button>
-          ) : (
-            <Button
-              block
-              type="primary"
-              disabled={account === "" || !validChain}
-              onClick={handleApproveLpToken}
-            >
-              Approve
-            </Button>
-          )
-        ) : (
+        {!account || account === "" || LPTokenAmount === 0 ? (
           <Button
             block
             type="primary"
-            disabled={account === ""}
             onClick={() =>
               window.open(
                 "https://pancakeswap.finance/v2/add/0x29a63F4B209C29B4DC47f06FFA896F32667DAD2C/0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -640,6 +633,32 @@ const App = () => {
           >
             Get LP Token
           </Button>
+        ) : (
+          <>
+            {(!validAllowance || depositAmount > allowance) && (
+              <Button
+                block
+                style={{ marginBottom: "0.7rem" }}
+                type="primary"
+                ghost
+                disabled={account === "" || !validChain}
+                onClick={handleApproveLpToken}
+              >
+                Approve (Available: {allowance})
+              </Button>
+            )}
+
+            {LPTokenAmount > 0 && validAllowance && (
+              <Button
+                block
+                type="primary"
+                onClick={handleDeposit}
+                disabled={!validChain || account === ""}
+              >
+                Deposit
+              </Button>
+            )}
+          </>
         )}
       </Form>
     );
