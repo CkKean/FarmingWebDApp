@@ -420,7 +420,15 @@ const App = () => {
 
       modal.confirm({
         title: "Deposit Confirmation",
-        content: `Are you sure to deposit ${depositAmount} ${TokenAddress.CAKE_LP_TOKEN.symbol}?`,
+        content: (
+          <p>
+            Are you sure want to deposit {depositAmount}{" "}
+            {TokenAddress.CAKE_LP_TOKEN.symbol}? <br />
+            <br />
+            *Note: All the existing rewards will be claimed and transfer to you
+            account once deposit successfully.
+          </p>
+        ),
         okText: "Confirm",
         cancelText: "Cancel",
         onOk: () => confirmDeposit(),
@@ -487,10 +495,10 @@ const App = () => {
         title: "Withdraw Confirmartion",
         content: (
           <p>
-            Are you sure want to withdraw {handleExponential(withdrawAmount)}{" "}
+            Are you sure want to withdraw {withdrawAmount}{" "}
             {TokenAddress.CAKE_LP_TOKEN.symbol}? <br />
             <br />
-            *Note: All the rewards will be claimed and transfer to you account
+            *Note: All the existing rewards will be claimed and transfer to you account
             once withdraw successfully.
           </p>
         ),
