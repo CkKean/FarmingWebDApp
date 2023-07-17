@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/pundiX_interview_assignment/static/css/main.c315ee6e.css",
-    "main.js": "/pundiX_interview_assignment/static/js/main.35c3a38d.js",
-    "static/js/787.4140d323.chunk.js": "/pundiX_interview_assignment/static/js/787.4140d323.chunk.js",
-    "static/media/landing-bg.svg": "/pundiX_interview_assignment/static/media/landing-bg.682cfea0360838c55964.svg",
-    "index.html": "/pundiX_interview_assignment/index.html",
-    "main.c315ee6e.css.map": "/pundiX_interview_assignment/static/css/main.c315ee6e.css.map",
-    "main.35c3a38d.js.map": "/pundiX_interview_assignment/static/js/main.35c3a38d.js.map",
-    "787.4140d323.chunk.js.map": "/pundiX_interview_assignment/static/js/787.4140d323.chunk.js.map"
+    "main.css": "/FarmingWebDApp/static/css/main.c61122b0.css",
+    "main.js": "/FarmingWebDApp/static/js/main.ff72ff3c.js",
+    "static/js/787.d0079c06.chunk.js": "/FarmingWebDApp/static/js/787.d0079c06.chunk.js",
+    "static/media/landing-bg.svg": "/FarmingWebDApp/static/media/landing-bg.682cfea0360838c55964.svg",
+    "index.html": "/FarmingWebDApp/index.html",
+    "main.c61122b0.css.map": "/FarmingWebDApp/static/css/main.c61122b0.css.map",
+    "main.ff72ff3c.js.map": "/FarmingWebDApp/static/js/main.ff72ff3c.js.map",
+    "787.d0079c06.chunk.js.map": "/FarmingWebDApp/static/js/787.d0079c06.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.c315ee6e.css",
-    "static/js/main.35c3a38d.js"
+    "static/css/main.c61122b0.css",
+    "static/js/main.ff72ff3c.js"
   ]
 }
