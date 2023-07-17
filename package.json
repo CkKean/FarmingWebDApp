@@ -1,8 +1,8 @@
 {
-  "name": "pundix_interview_assignment",
+  "name": "farming_web_dapp",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ckkean.github.io/pundiX_interview_assignment/",
+  "homepage": "https://ckkean.github.io/FarmingWebDApp/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
