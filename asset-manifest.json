@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/FarmingWebDApp/static/css/main.c61122b0.css",
-    "main.js": "/FarmingWebDApp/static/js/main.bc953ca3.js",
+    "main.js": "/FarmingWebDApp/static/js/main.c8f17c9b.js",
     "static/js/787.d0079c06.chunk.js": "/FarmingWebDApp/static/js/787.d0079c06.chunk.js",
     "static/media/landing-bg.svg": "/FarmingWebDApp/static/media/landing-bg.682cfea0360838c55964.svg",
     "index.html": "/FarmingWebDApp/index.html",
     "main.c61122b0.css.map": "/FarmingWebDApp/static/css/main.c61122b0.css.map",
-    "main.bc953ca3.js.map": "/FarmingWebDApp/static/js/main.bc953ca3.js.map",
+    "main.c8f17c9b.js.map": "/FarmingWebDApp/static/js/main.c8f17c9b.js.map",
     "787.d0079c06.chunk.js.map": "/FarmingWebDApp/static/js/787.d0079c06.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c61122b0.css",
-    "static/js/main.bc953ca3.js"
+    "static/js/main.c8f17c9b.js"
   ]
 }
