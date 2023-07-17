@@ -31,7 +31,13 @@ import { RestakingFarmAbi } from "./constants/abi/farmContractAbi";
 import { PurseBusdPoolAbi } from "./constants/abi/purseBusdPoolAbi";
 import { ContractAddress } from "./constants/contracts";
 import { TokenAddress } from "./constants/tokens";
-import { handleExponential } from "./utils/mathCalculation";
+import {
+  divide,
+  handleExponential,
+  isEqual,
+  isLargerThan,
+  multiply,
+} from "./utils/mathCalculation";
 import { transformWalletAddress } from "./utils/transformWalletAddress";
 
 const ACTION_TYPE = {
@@ -58,13 +64,13 @@ const App = () => {
   const [approveLoading, setApproveLoading] = useState<boolean>(false);
 
   const [validAllowance, setValidAllowance] = useState<boolean>(false);
-  const [allowance, setAllowance] = useState<number>(0);
-  const [LPTokenAmount, setLPTokenAmount] = useState<number>(0);
-  const [withdrawAmount, setWithdrawAmount] = useState<number>(0);
-  const [depositAmount, setDepositAmount] = useState<number>(0);
-  const [stakedToken, setStakedToken] = useState<number>(0);
-  const [rewardTokens, setRewardTokens] = useState<number>(0);
-  const [rewardDebt, setRewardDebt] = useState<number>(0);
+  const [allowance, setAllowance] = useState<string>("0");
+  const [LPTokenAmount, setLPTokenAmount] = useState<string>("0");
+  const [withdrawAmount, setWithdrawAmount] = useState<string>("0");
+  const [depositAmount, setDepositAmount] = useState<string>("0");
+  const [stakedToken, setStakedToken] = useState<string>("0");
+  const [rewardTokens, setRewardTokens] = useState<string>("0");
+  const [rewardDebt, setRewardDebt] = useState<string>("0");
 
   const [actionType, setActionType] = useState<number>(ACTION_TYPE.DEPOSIT);
 
@@ -139,8 +145,8 @@ const App = () => {
     const newAccount = accounts[0] || "";
     setAccount(newAccount);
     if (newAccount && newAccount !== "") {
-      setDepositAmount(0);
-      setWithdrawAmount(0);
+      setDepositAmount("0");
+      setWithdrawAmount("0");
       fetchTokensAmount(newAccount);
     }
   };
@@ -250,11 +256,13 @@ const App = () => {
   const resetInputs = () => {
     setLoading(true);
     setAccount(null);
-    setLPTokenAmount(0);
-    setAllowance(0);
+    setLPTokenAmount("0");
+    setAllowance("0");
     setValidAllowance(false);
-    setStakedToken(0);
-    setRewardTokens(0);
+    setStakedToken("0");
+    setRewardTokens("0");
+    setDepositAmount("0");
+    setWithdrawAmount("0");
     setLoading(false);
   };
 
@@ -264,11 +272,11 @@ const App = () => {
       const rewardAmount = await farmContract.methods
         .pendingReward(TokenAddress.CAKE_LP_TOKEN.address, account)
         .call();
-      let amount = 0;
+      let amount = "0";
       if (rewardAmount) {
-        amount = Number(web3.utils.fromWei(rewardAmount, "ether"));
-        setRewardTokens(amount);
+        amount = handleExponential(web3.utils.fromWei(rewardAmount, "ether"));
       }
+      setRewardTokens(amount);
     } catch (error) {
       console.error(error);
       messageApi.error("Fetch reward amount error: " + error);
@@ -304,18 +312,24 @@ const App = () => {
           rewardAmountPromise,
         ]);
 
-      const allowanceInEther = Number(
+      const allowanceInEther = handleExponential(
         web3.utils.fromWei(allowanceBalance, "ether")
       );
 
-      setLPTokenAmount(Number(web3.utils.fromWei(lpBalance, "ether")));
-      setAllowance(allowanceInEther);
-      setValidAllowance(allowanceInEther > 0);
-      setStakedToken(Number(web3.utils.fromWei(stakedAmount.amount, "ether")));
-      setRewardDebt(
-        Number(web3.utils.fromWei(stakedAmount.rewardDebt, "ether"))
+      setLPTokenAmount(
+        handleExponential(web3.utils.fromWei(lpBalance, "ether"))
       );
-      setRewardTokens(Number(web3.utils.fromWei(rewardAmount, "ether")));
+      setAllowance(allowanceInEther);
+      setValidAllowance(isLargerThan(allowanceInEther, 0));
+      setStakedToken(
+        handleExponential(web3.utils.fromWei(stakedAmount.amount, "ether"))
+      );
+      setRewardDebt(
+        handleExponential(web3.utils.fromWei(stakedAmount.rewardDebt, "ether"))
+      );
+      setRewardTokens(
+        handleExponential(web3.utils.fromWei(rewardAmount, "ether"))
+      );
     }
 
     setLoading(false);
@@ -324,8 +338,8 @@ const App = () => {
   const changeActionType = (type: number) => {
     setActionType(type);
     fetchTokensAmount();
-    setDepositAmount(0);
-    setWithdrawAmount(0);
+    setDepositAmount("0");
+    setWithdrawAmount("0");
   };
 
   const handleApproveLpToken = async () => {
@@ -351,21 +365,19 @@ const App = () => {
   };
 
   const handleDepositPercentage = (value: number) => {
-    setDepositAmount((value / 100) * LPTokenAmount);
+    const amount = multiply(divide(value, 100), LPTokenAmount);
+    setDepositAmount(handleExponential(amount));
   };
 
-  const depositValidation = (value: string | number) => {
-    const numValue = Number(value);
+  const depositValidation = (value: string) => {
     let message = "";
-    if (numValue > LPTokenAmount) {
+    if (isLargerThan(value, LPTokenAmount)) {
       message = "Insufficient LP Token balance.";
-    } else if (numValue > allowance) {
+    } else if (isLargerThan(value, allowance)) {
       message = "Insufficient allowance. Please approve the allowance.";
-    } else if (numValue === 0) {
+    } else if (isEqual(value, 0)) {
       message = "Deposit amount must larger than zero.";
-    } else if (
-      !/^(?=.*[1-9])\d*(\.\d{0,18})?$/.test(depositAmount.toString())
-    ) {
+    } else if (!/^(?=.*[1-9])\d*(\.\d{0,18})?$/.test(value)) {
       message =
         "Please enter a deposit amount with up to 18 decimal places only.";
     }
@@ -380,7 +392,7 @@ const App = () => {
       const depositResult = await farmContract.methods
         .deposit(
           TokenAddress.CAKE_LP_TOKEN.address,
-          web3.utils.toWei(depositAmount, "ether")
+          web3.utils.toWei(handleExponential(depositAmount), "ether")
         )
         .send({ from: account });
 
@@ -390,7 +402,7 @@ const App = () => {
         messageApi.error("Deposit unsuccessfully. Please try again.");
       }
       fetchTokensAmount();
-      setDepositAmount(0);
+      setDepositAmount("0");
     } catch (error) {
       console.error(error);
       messageApi.error(`Something went wrong: ${error}`);
@@ -420,17 +432,17 @@ const App = () => {
   };
 
   const handleWithdrawPercentage = (value: number) => {
-    setWithdrawAmount((value / 100) * stakedToken);
+    const amount = multiply(divide(value, 100), stakedToken);
+    setWithdrawAmount(handleExponential(amount));
   };
 
-  const withdrawValidation = (value: string | number) => {
-    const numValue = Number(value);
+  const withdrawValidation = (value: string) => {
     let message = "";
-    if (numValue > stakedToken) {
+    if (isLargerThan(value, stakedToken)) {
       message = "Staked balance is insufficient for withdrawal.";
-    } else if (numValue === 0) {
+    } else if (isEqual(value, 0)) {
       message = "Withdraw amount must larger than zero.";
-    } else if (!/^(?=.*[1-9])\d*(\.\d{0,18})?$/.test(numValue.toString())) {
+    } else if (!/^(?=.*[1-9])\d*(\.\d{0,18})?$/.test(value)) {
       message =
         "Please enter a withdraw amount with up to 18 decimal places only.";
     }
@@ -445,7 +457,7 @@ const App = () => {
       const withdrawResult = await farmContract.methods
         .withdraw(
           TokenAddress.CAKE_LP_TOKEN.address,
-          web3.utils.toWei(withdrawAmount, "ether")
+          web3.utils.toWei(handleExponential(withdrawAmount), "ether")
         )
         .send({ from: account });
 
@@ -455,7 +467,7 @@ const App = () => {
         messageApi.error(`Withdraw unsuccessfully. Please try again.`);
       }
       fetchTokensAmount();
-      setWithdrawAmount(0);
+      setWithdrawAmount("0");
     } catch (error) {
       console.error(error);
       messageApi.error(`Something went wrong: ${error}`);
@@ -475,7 +487,7 @@ const App = () => {
         title: "Withdraw Confirmartion",
         content: (
           <p>
-            Are you sure want to withdraw {withdrawAmount}{" "}
+            Are you sure want to withdraw {handleExponential(withdrawAmount)}{" "}
             {TokenAddress.CAKE_LP_TOKEN.symbol}? <br />
             <br />
             *Note: All the rewards will be claimed and transfer to you account
@@ -494,9 +506,8 @@ const App = () => {
 
   const handleHarvest = async () => {
     try {
-      if (rewardTokens <= 0) {
+      if (isEqual(rewardTokens, 0)) {
         messageApi.warning("You don't have reward yet.");
-
         fetchRewardAmount();
         return;
       }
@@ -576,13 +587,7 @@ const App = () => {
           </Col>
           <Col md={12} style={{ textAlign: "right" }}>
             <small>
-              Balance:{" "}
-              {LPTokenAmount > 0
-                ? handleExponential(
-                    LPTokenAmount,
-                    TokenAddress.CAKE_LP_TOKEN.decimal
-                  )
-                : 0}{" "}
+              Balance: {isLargerThan(LPTokenAmount, 0) ? LPTokenAmount : 0}{" "}
               {TokenAddress.CAKE_LP_TOKEN.symbol}
             </small>
           </Col>
@@ -617,13 +622,21 @@ const App = () => {
             disabled={!validAllowance || !validChain}
             placeholder="Enter Deposit Amount"
             onChange={(e) => {
-              setDepositAmount(Number(e.target.value));
+              const amount = e.target.value;
+              setDepositAmount(amount);
+            }}
+            onKeyDown={(e) => {
+              const restrictedKeys = ["e", "-", "E"]; // Array of restricted key codes
+
+              if (restrictedKeys.includes(e.key)) {
+                e.preventDefault();
+              }
             }}
             value={depositAmount}
           />
         </Form.Item>
 
-        {!account || account === "" || LPTokenAmount === 0 ? (
+        {!account || account === "" || isEqual(LPTokenAmount, 0) ? (
           <Button
             block
             type="primary"
@@ -638,7 +651,7 @@ const App = () => {
           </Button>
         ) : (
           <>
-            {(!validAllowance || depositAmount > allowance) && (
+            {(!validAllowance || isLargerThan(depositAmount, allowance)) && (
               <Button
                 block
                 style={{ marginBottom: "0.7rem" }}
@@ -648,11 +661,12 @@ const App = () => {
                 disabled={account === "" || !validChain}
                 onClick={handleApproveLpToken}
               >
-                Approve (Available: {allowance})
+                Approve (Available: {allowance}{" "}
+                {TokenAddress.CAKE_LP_TOKEN.symbol})
               </Button>
             )}
 
-            {LPTokenAmount > 0 && validAllowance && (
+            {isLargerThan(LPTokenAmount, 0) && validAllowance && (
               <Button
                 block
                 type="primary"
@@ -692,13 +706,7 @@ const App = () => {
           </Col>
           <Col md={12} style={{ textAlign: "right" }}>
             <small>
-              Balance:{" "}
-              {stakedToken > 0
-                ? handleExponential(
-                    stakedToken,
-                    TokenAddress.CAKE_LP_TOKEN.decimal
-                  )
-                : 0}{" "}
+              Balance: {isLargerThan(stakedToken, 0) ? stakedToken : 0}{" "}
               {TokenAddress.CAKE_LP_TOKEN.symbol}
             </small>
           </Col>
@@ -707,7 +715,7 @@ const App = () => {
         <Form.Item
           style={{ marginBottom: "3rem" }}
           extra={
-            stakedToken > 0 && (
+            isLargerThan(stakedToken, 0) && (
               <Space wrap style={{ float: "right", marginTop: "1rem" }}>
                 <InputPercentageButton
                   content="25%"
@@ -730,18 +738,28 @@ const App = () => {
           }
         >
           <Input
-            type="number"
+            type="text"
             max={stakedToken}
             min={0}
-            disabled={stakedToken === 0 || !validChain}
+            disabled={isEqual(stakedToken, 0) || !validChain}
             placeholder="Enter Withdraw Amount"
             value={withdrawAmount}
-            onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+            onChange={(e) => {
+              const amount = e.target.value;
+              setWithdrawAmount(amount);
+            }}
+            onKeyDown={(e) => {
+              const restrictedKeys = ["e", "-", "E"]; // Array of restricted key codes
+
+              if (restrictedKeys.includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
           />
         </Form.Item>
         <Button
           block
-          disabled={stakedToken === 0 || !validChain}
+          disabled={isEqual(stakedToken, 0) || !validChain}
           type="primary"
           onClick={handleWithdraw}
         >
@@ -760,7 +778,7 @@ const App = () => {
 
   const rewardForm = useMemo(() => {
     return (
-      rewardTokens > 0 && (
+      isLargerThan(rewardTokens, 0) && (
         <>
           <Col md={6} sm={2} xs={2}></Col>
           <Col md={12} sm={20} xs={20} style={{ marginTop: "1rem" }}>
@@ -780,12 +798,7 @@ const App = () => {
                       loading={rewardLoading}
                       paragraph={{ rows: 0 }}
                     >
-                      {rewardTokens > 0
-                        ? handleExponential(
-                            rewardTokens,
-                            TokenAddress.CAKE_LP_TOKEN.decimal
-                          )
-                        : 0}{" "}
+                      {isLargerThan(rewardTokens, 0) ? rewardTokens : 0}{" "}
                       {TokenAddress.PURSE_TOKEN.symbol}
                     </Skeleton>
                   </div>
