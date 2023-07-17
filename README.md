@@ -1,15 +1,15 @@
 # Pundi X Interview Assignment
 
-This project is built for the Pundi X Frontend Web3 Developer interview assignment.
-The chain used for this assignment is **BSC Mainnet**.
+This project is specifically developed for the Pundi X Frontend Web3 Developer interview assignment. The assignment utilizes the **Binance Smart Chain (BSC) Mainnet** as the blockchain network. Please note that this project is designed to work only with web browsers that have MetaMask installed and configured. MetaMask is required for the successful execution and interaction with the functionalities of this project. If you wish to access the project on mobile devices, you can utilize the MetaMask mobile application.
 
-You can preview the app at [Cake-LP Farming Web DApp](https://ckkean.github.io/FarmingWebDApp/)
+You can preview the app via [Farming Web DApp](https://ckkean.github.io/FarmingWebDApp/)
 
 ## Tech Stack
 
 - TypeScript
 - React
 - Ant Design (Antd)
+- Web3
 
 ## Contracts Address
 

@@ -55,6 +55,7 @@ const App = () => {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [rewardLoading, setRewardLoading] = useState<boolean>(false);
+  const [approveLoading, setApproveLoading] = useState<boolean>(false);
 
   const [validAllowance, setValidAllowance] = useState<boolean>(false);
   const [allowance, setAllowance] = useState<number>(0);
@@ -138,8 +139,8 @@ const App = () => {
     const newAccount = accounts[0] || "";
     setAccount(newAccount);
     if (newAccount && newAccount !== "") {
-      setDepositAmount(0)
-      setWithdrawAmount(0)
+      setDepositAmount(0);
+      setWithdrawAmount(0);
       fetchTokensAmount(newAccount);
     }
   };
@@ -328,6 +329,7 @@ const App = () => {
   };
 
   const handleApproveLpToken = async () => {
+    setApproveLoading(true);
     try {
       const approveResult = await poolContract.methods
         .approve(ContractAddress.FARM.address, web3.utils.toWei(1, "ether"))
@@ -345,6 +347,7 @@ const App = () => {
       console.error(error);
       messageApi.error(`Something went wrong: ${error}`);
     }
+    setApproveLoading(false);
   };
 
   const handleDepositPercentage = (value: number) => {
@@ -641,6 +644,7 @@ const App = () => {
                 style={{ marginBottom: "0.7rem" }}
                 type="primary"
                 ghost
+                loading={approveLoading}
                 disabled={account === "" || !validChain}
                 onClick={handleApproveLpToken}
               >
