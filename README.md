@@ -2,7 +2,6 @@
 
 \*This project is built for Pundi X frontend Web3 developer interview assignment.
 
-
 You can preview the dev app at: <https://tipmecrypto-566c4.web.app> (deployed with `marter` branch)
 
 ## Tech Stack
@@ -10,6 +9,14 @@ You can preview the dev app at: <https://tipmecrypto-566c4.web.app> (deployed wi
 - Typescript
 - React
 - Antd
+
+## Contracts
+
+- Farm Contract address: ​​` 0x439ec8159740a9B9a579F286963Ac1C050aF31C8` (BSC mainnet)
+- Farm Contract address: `0x41c4115d5acdff238eefca106402da97bd6dee77` (ABi can be found here)
+- PURSE Token Address: `0x29a63F4B209C29B4DC47f06FFA896F32667DAD2C`
+- BUSD Token Address: `0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56`
+- CAKE-LP Token Address: `0x081F4B87F223621B4B31cB7A727BB583586eAD98`
 
 ## Main Pages
 
@@ -26,7 +33,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
-
 
 ### `npm run build`
 
