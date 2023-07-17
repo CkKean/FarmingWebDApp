@@ -3,7 +3,7 @@
 This project is built for the Pundi X Frontend Web3 Developer interview assignment.
 The chain used for this assignment is **BSC Mainnet**.
 
-You can preview the app at [Cake-LP Farming Web DApp](https://ckkean.github.io/pundiX_interview_assignment/)
+You can preview the app at [Cake-LP Farming Web DApp](https://ckkean.github.io/FarmingWebDApp/)
 
 ## Tech Stack
 
