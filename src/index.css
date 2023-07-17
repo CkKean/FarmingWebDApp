@@ -7,7 +7,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #dff8fe !important;
   color: #111 !important;
-  background-image: url("../landing-bg.svg");
+  background-image: url("../public/landing-bg.svg");
   background-size: cover;
   background-repeat: no-repeat;
 }

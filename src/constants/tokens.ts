@@ -11,4 +11,10 @@ export const TokenAddress = {
     symbol: "BUSD",
     decimal: 18,
   },
+  CAKE_LP_TOKEN: {
+    address: "0x081F4B87F223621B4B31cB7A727BB583586eAD98",
+    symbol: "Cake-LP",
+    name: "Pancake LPs",
+    decimal: 18,
+  },
 };
