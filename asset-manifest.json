@@ -1,16 +1,14 @@
 {
   "files": {
     "main.css": "/pundiX_interview_assignment/static/css/main.c315ee6e.css",
-    "main.js": "/pundiX_interview_assignment/static/js/main.b46240ba.js",
-    "static/js/787.5939d8ee.chunk.js": "/pundiX_interview_assignment/static/js/787.5939d8ee.chunk.js",
+    "main.js": "/pundiX_interview_assignment/static/js/main.b4940b9a.js",
     "static/media/landing-bg.svg": "/pundiX_interview_assignment/static/media/landing-bg.682cfea0360838c55964.svg",
     "index.html": "/pundiX_interview_assignment/index.html",
     "main.c315ee6e.css.map": "/pundiX_interview_assignment/static/css/main.c315ee6e.css.map",
-    "main.b46240ba.js.map": "/pundiX_interview_assignment/static/js/main.b46240ba.js.map",
-    "787.5939d8ee.chunk.js.map": "/pundiX_interview_assignment/static/js/787.5939d8ee.chunk.js.map"
+    "main.b4940b9a.js.map": "/pundiX_interview_assignment/static/js/main.b4940b9a.js.map"
   },
   "entrypoints": [
     "static/css/main.c315ee6e.css",
-    "static/js/main.b46240ba.js"
+    "static/js/main.b4940b9a.js"
   ]
 }
