@@ -24,6 +24,7 @@ import {
   Tooltip,
   message,
 } from "antd";
+import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import Web3 from "web3";
 import InputPercentageButton from "./components/inputPercentageButton";
@@ -71,6 +72,7 @@ const App = () => {
   const [stakedToken, setStakedToken] = useState<string>("0");
   const [rewardTokens, setRewardTokens] = useState<string>("0");
   const [rewardDebt, setRewardDebt] = useState<string>("0");
+  const [rewardCost, setRewardCost] = useState<string>("0");
 
   const [actionType, setActionType] = useState<number>(ACTION_TYPE.DEPOSIT);
 
@@ -269,19 +271,60 @@ const App = () => {
   const fetchRewardAmount = async () => {
     setRewardLoading(true);
     try {
-      const rewardAmount = await farmContract.methods
+      const rewardAmountPromise = farmContract.methods
         .pendingReward(TokenAddress.CAKE_LP_TOKEN.address, account)
         .call();
+
+      const [rewardAmount, priceResult] = await Promise.all([
+        rewardAmountPromise,
+        fetchPursePriceFeed(),
+      ]);
+
       let amount = "0";
+      let amountPrice = "0";
       if (rewardAmount) {
         amount = handleExponential(web3.utils.fromWei(rewardAmount, "ether"));
+
+        if (priceResult && priceResult.status === 200) {
+          amountPrice = multiply(amount, priceResult.data.usdPriceFormatted, 4);
+        } else {
+          messageApi.error("Fetch PURSE price error");
+        }
       }
+
       setRewardTokens(amount);
+      setRewardCost(amountPrice);
     } catch (error) {
       console.error(error);
       messageApi.error("Fetch reward amount error: " + error);
     }
     setRewardLoading(false);
+  };
+
+  const fetchPursePriceFeed = async (): Promise<{
+    status: number;
+    data: { usdPrice: number; usdPriceFormatted: string };
+  }> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const priceResult: any = await axios.get(
+          "https://deep-index.moralis.io/api/v2/erc20/0x29a63F4B209C29B4DC47f06FFA896F32667DAD2C/price?chain=bsc&include=percent_change",
+          {
+            headers: {
+              accept: "application/json",
+              "Access-Control-Allow-Origin": "*",
+              referrerPolicy: "origin-when-cross-origin",
+              "X-API-Key":
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjA0YjgyYzUyLWEzZDgtNDFlZC04ZGU3LWNmYmQzNDA3ZTA4MyIsIm9yZ0lkIjoiMzQ4NzY3IiwidXNlcklkIjoiMzU4NDg0IiwidHlwZUlkIjoiYjM2OWFjMDEtOTVhOC00Yzg3LWFiNWMtNDVkMDQ5OTMwMmJjIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE2ODk2NTExOTAsImV4cCI6NDg0NTQxMTE5MH0.bX4FTYB09GacxDC-nEKk3z1owoJIyDi_Fo1H9MlXzcM",
+            },
+          }
+        );
+        resolve(priceResult);
+      } catch (error) {
+        messageApi.error("Fetch purse price error: " + error);
+        reject(error);
+      }
+    });
   };
 
   const fetchTokensAmount = async (accountWallet = account) => {
@@ -304,16 +347,25 @@ const App = () => {
         .pendingReward(TokenAddress.CAKE_LP_TOKEN.address, accountWallet)
         .call();
 
-      const [lpBalance, allowanceBalance, stakedAmount, rewardAmount] =
-        await Promise.all([
-          lpAmountPromise,
-          allowanceAmountPromise,
-          stakedAmountPromise,
-          rewardAmountPromise,
-        ]);
+      const [
+        lpBalance,
+        allowanceBalance,
+        stakedAmount,
+        rewardAmount,
+        priceFeed,
+      ] = await Promise.all([
+        lpAmountPromise,
+        allowanceAmountPromise,
+        stakedAmountPromise,
+        rewardAmountPromise,
+        fetchPursePriceFeed(),
+      ]);
 
       const allowanceInEther = handleExponential(
         web3.utils.fromWei(allowanceBalance, "ether")
+      );
+      const rewardTokens = handleExponential(
+        web3.utils.fromWei(rewardAmount, "ether")
       );
 
       setLPTokenAmount(
@@ -327,9 +379,17 @@ const App = () => {
       setRewardDebt(
         handleExponential(web3.utils.fromWei(stakedAmount.rewardDebt, "ether"))
       );
-      setRewardTokens(
-        handleExponential(web3.utils.fromWei(rewardAmount, "ether"))
-      );
+      setRewardTokens(rewardTokens);
+
+      let totalPrice = "0";
+      if (priceFeed.status === 200) {
+        totalPrice = multiply(
+          rewardTokens,
+          priceFeed.data.usdPriceFormatted,
+          4
+        );
+      }
+      setRewardCost(totalPrice);
     }
 
     setLoading(false);
@@ -498,8 +558,8 @@ const App = () => {
             Are you sure want to withdraw {withdrawAmount}{" "}
             {TokenAddress.CAKE_LP_TOKEN.symbol}? <br />
             <br />
-            *Note: All the existing rewards will be claimed and transfer to you account
-            once withdraw successfully.
+            *Note: All the existing rewards will be claimed and transfer to you
+            account once withdraw successfully.
           </p>
         ),
         okText: "Confirm",
@@ -807,7 +867,7 @@ const App = () => {
                       paragraph={{ rows: 0 }}
                     >
                       {isLargerThan(rewardTokens, 0) ? rewardTokens : 0}{" "}
-                      {TokenAddress.PURSE_TOKEN.symbol}
+                      {TokenAddress.PURSE_TOKEN.symbol} <br />≈ {rewardCost} USD
                     </Skeleton>
                   </div>
                 </Col>
@@ -837,6 +897,7 @@ const App = () => {
     rewardDebt,
     validChain,
     rewardLoading,
+    rewardCost,
     handleHarvest,
     handleExponential,
     fetchRewardAmount,
